@@ -25,6 +25,7 @@
 #define LED_BLUE 	GPIO_PIN_2
 #define LED_GREEN 	GPIO_PIN_3
 
+#define num 10
 uint8_t ConfigureUART(void);
 uint8_t ConfigureSystem(void);
 uint8_t ConfigureI2C(void);
@@ -44,6 +45,33 @@ int main()
 
 	int16_t accelmg[3];
 	int16_t mdegps[3];
+//----------for smoothing ----------------
+	int16_t arrax[num],array[num],arraz[num];
+
+	uint8_t i;
+	  for ( i = 0; i < num; i++)
+	    arrax[i] = 0;
+	  for ( i = 0; i < num; i++)
+	    array[i] = 0;
+	  for ( i = 0; i < num; i++)
+	    arraz[i] = 0;
+
+	  int8_t totax=0,totay =0,totaz=0;
+	  int8_t indax=0,inday=0,indaz=0;
+
+	  int16_t grrax[num],grray[num],grraz[num];
+
+//	  	uint8_t i;
+	  	  for ( i = 0; i < num; i++)
+	  	    grrax[i] = 0;
+	  	  for ( i = 0; i < num; i++)
+	  	    grray[i] = 0;
+	  	  for ( i = 0; i < num; i++)
+	  	    grraz[i] = 0;
+
+	  	  int8_t gtotax=0,gtotay =0,gtotaz=0;
+	  	  int8_t gindax=0,ginday=0,gindaz=0;
+//-----------------------------------------
 
 	for (;;) {
 		#ifdef DEBUG_LEVEL2
@@ -62,9 +90,38 @@ int main()
 						MPU9150.i16_rawAccel[2]);
 
 
-		UARTprintf("\nMili g   -> X: %6d, Y: %6d, Z: %6d", accelmg[0],accelmg[1],accelmg[2]);
-
 		MPU9150GetAccelg(accelmg);
+
+//		UARTprintf("\nMili g   -> X: %6d, Y: %6d, Z: %6d", accelmg[0],accelmg[1],accelmg[2]);
+
+//--------- smothing process -----------------------
+		int16_t accel_smooth[3];
+
+		totax-= arrax[indax];
+		  arrax[indax] = accelmg[0];
+		  totax+= arrax[indax];
+		  indax++;
+		  if(indax>=num)
+		   indax=0;
+		  accel_smooth[0] = totax/num;
+
+		  totay-= array[inday];
+		    array[inday] = accelmg[1];
+		    totay+= array[inday];
+		    inday++;
+		    if(inday>=num)
+		     inday=0;
+		    accel_smooth[1] = totay/num;
+
+		    totaz-= arraz[indaz];
+		    arraz[indaz] = accelmg[2];
+		    totaz+= arraz[indaz];
+		    indaz++;
+		    if(indaz>=num)
+		     indaz=0;
+		    accel_smooth[2] = totaz/num;
+//-------------------------------------------------------
+		    UARTprintf("\nMili g   -> X: %6d, Y: %6d, Z: %6d", accel_smooth[0],accel_smooth[1],accel_smooth[2]);
 
 		MPU9150.getRawGyroData();
 /*		UARTprintf("\nRaw gyro Unsigned -> X: %6d, Y: %6d, Z: %6d",
@@ -79,8 +136,37 @@ int main()
 
 		MPU9150GetDegPerSec(mdegps);
 
-		UARTprintf("\n mili Deg/s   -> X: %6d, Y: %6d, Z: %6d", mdegps[0],mdegps[1],mdegps[2]);
+//		UARTprintf("\n mili Deg/s   -> X: %6d, Y: %6d, Z: %6d", mdegps[0],mdegps[1],mdegps[2]);
 
+		//--------- smothing process -----------------------
+				int16_t gyro_smooth[3];
+
+				gtotax-= grrax[gindax];
+				  grrax[gindax] = mdegps[0];
+				  gtotax+= grrax[gindax];
+				  gindax++;
+				  if(gindax>=num)
+				   gindax=0;
+				  gyro_smooth[0] = gtotax/num;
+
+				  gtotay-= grray[ginday];
+				    grray[ginday] = mdegps[1];
+				    gtotay+= grray[ginday];
+				    ginday++;
+				    if(ginday>=num)
+				     ginday=0;
+				    gyro_smooth[1] = gtotay/num;
+
+				    gtotaz-= grraz[gindaz];
+				    grraz[gindaz] = mdegps[2];
+				    gtotaz+= grraz[gindaz];
+				    gindaz++;
+				    if(gindaz>=num)
+				     gindaz=0;
+				    gyro_smooth[2] = gtotaz/num;
+//		-------------------------------------------------------
+
+	    UARTprintf("\n mili Deg/s   -> X: %6d, Y: %6d, Z: %6d", gyro_smooth[0],gyro_smooth[1],gyro_smooth[2]);
 		// set the red LED pin high, others low
 		ROM_GPIOPinWrite(GPIO_PORTF_BASE, LED_RED|LED_GREEN|LED_BLUE, LED_RED|LED_BLUE);
 		ROM_SysCtlDelay(5000000);
