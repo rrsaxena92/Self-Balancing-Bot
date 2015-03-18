@@ -228,12 +228,12 @@ uint8_t MPU9150Init(void)
 	}
 
 
-	MPU9150Write(0x6b, 0x00);
-	MPU9150Write(0x25, 0x00);
-	MPU9150Write(0x1a, 0x00);
-	MPU9150Write(0x1b, 0x12);
-	MPU9150Write(0x1c, 0x0a);
-	MPU9150Write(0x24, 0x00);
+	MPU9150Write(0x6b, 0x00);//Power Management 1: 0x00= No Reset,No sleep mode,No cylce mode,internal clk
+	MPU9150Write(0x25, 0x00);//I2C Slave 0 Control: 0= data transfer as write to slave 0
+	MPU9150Write(0x1a, 0x00);//Configuration: 0=Input disabled,DLPF_CFG=0(acc_delay=0,gyro_delay=0.98ms,gyro_fs=8Khz)
+	MPU9150Write(0x1b, 0x12);//Gyroscope Configuration: 0x12= fullscale range=500deg/sec
+	MPU9150Write(0x1c, 0x0a);//Accelerometer Configuration: 0x0a= fullscale range=4g,HPF cutoff freq=2.5Hz
+	MPU9150Write(0x24, 0x00);//I2C Master Control: 0= No multimaster,no wait for ext sensor,no slave3,no transition,master_clk_speed=348Khz
 
 	uint8_t val1, val2, val3, val4, val5, val6;
 	val1 = MPU9150Read(0x6b);
