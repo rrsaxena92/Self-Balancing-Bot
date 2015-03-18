@@ -17,6 +17,8 @@ uint8_t MPU9150Write(uint8_t, uint8_t);
 uint8_t MPU9150Init(void);
 uint8_t MPU9150GetRawAccelData(void);
 uint8_t MPU9150GetRawGyroData(void);
+uint8_t MPU9150GetAccelg(int16_t*);
+uint8_t MPU9150GetDegPerSec(int16_t*);
 
 typedef struct
 {

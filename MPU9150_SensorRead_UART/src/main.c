@@ -25,9 +25,6 @@
 #define LED_BLUE 	GPIO_PIN_2
 #define LED_GREEN 	GPIO_PIN_3
 
-#define accel_sense 8192 //for 4g sensitivity=8192
-#define gyro_sense 131 //for 250dps sensitivity=131
-
 uint8_t ConfigureUART(void);
 uint8_t ConfigureSystem(void);
 uint8_t ConfigureI2C(void);
@@ -63,15 +60,11 @@ int main()
 						MPU9150.i16_rawAccel[0],
 						MPU9150.i16_rawAccel[1],
 						MPU9150.i16_rawAccel[2]);
-		uint8_t i;
-		for(i=0;i<3;i++)
-		{
-			accelmg[i]=(MPU9150.i16_rawAccel[i]*1000)/accel_sense; //calculation of g in mili g values
-		}
+
 
 		UARTprintf("\nMili g   -> X: %6d, Y: %6d, Z: %6d", accelmg[0],accelmg[1],accelmg[2]);
 
-
+		MPU9150GetAccelg(accelmg);
 
 		MPU9150.getRawGyroData();
 /*		UARTprintf("\nRaw gyro Unsigned -> X: %6d, Y: %6d, Z: %6d",
@@ -84,10 +77,7 @@ int main()
 								MPU9150.i16_rawGyro[1],
 								MPU9150.i16_rawGyro[2]);
 
-		for(i=0;i<3;i++)
-		{
-			mdegps[i]=(MPU9150.i16_rawGyro[i]*1000)/gyro_sense; //calculation of mili deg per sec
-		}
+		MPU9150GetDegPerSec(mdegps);
 
 		UARTprintf("\n mili Deg/s   -> X: %6d, Y: %6d, Z: %6d", mdegps[0],mdegps[1],mdegps[2]);
 
