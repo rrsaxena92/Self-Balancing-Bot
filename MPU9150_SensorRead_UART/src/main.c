@@ -25,6 +25,9 @@
 #define LED_BLUE 	GPIO_PIN_2
 #define LED_GREEN 	GPIO_PIN_3
 
+#define accel_sense 8192 //for 4g sensitivity=8192
+#define gyro_sense 131 //for 250dps sensitivity=131
+
 uint8_t ConfigureUART(void);
 uint8_t ConfigureSystem(void);
 uint8_t ConfigureI2C(void);
@@ -34,7 +37,7 @@ int main()
 	ConfigureSystem();
 	ConfigureUART();
 
-	MPU9150.address = 0x68;
+	MPU9150.address = 0x69;
 
 	ConfigureI2C();
 	//uint16_t x,y,z;
@@ -42,22 +45,51 @@ int main()
 	MPU9150.init();
 	UARTprintf("\nTest read: 0x%x", MPU9150.read(0x75));
 
+	int16_t accelmg[3];
+	int16_t mdegps[3];
+
 	for (;;) {
 		#ifdef DEBUG_LEVEL2
 		UARTprintf("\nLED Loop");
 		#endif
 
 		MPU9150.getRawAccelData();
-		UARTprintf("\nRaw Unsigned -> X: %6d, Y: %6d, Z: %6d",
+/*		UARTprintf("\nRaw accel Unsigned -> X: %6d, Y: %6d, Z: %6d",
 						MPU9150.ui16_rawAccel[0],
 						MPU9150.ui16_rawAccel[1],
 						MPU9150.ui16_rawAccel[2]);
-
-		UARTprintf("\nRaw Signed   -> X: %6d, Y: %6d, Z: %6d",
+*/
+		UARTprintf("\nRaw accel Signed   -> X: %6d, Y: %6d, Z: %6d",
 						MPU9150.i16_rawAccel[0],
 						MPU9150.i16_rawAccel[1],
 						MPU9150.i16_rawAccel[2]);
+		uint8_t i;
+		for(i=0;i<3;i++)
+		{
+			accelmg[i]=(MPU9150.i16_rawAccel[i]*1000)/accel_sense; //calculation of g in mili g values
+		}
 
+		UARTprintf("\nMili g   -> X: %6d, Y: %6d, Z: %6d", accelmg[0],accelmg[1],accelmg[2]);
+
+
+
+		MPU9150.getRawGyroData();
+/*		UARTprintf("\nRaw gyro Unsigned -> X: %6d, Y: %6d, Z: %6d",
+								MPU9150.ui16_rawAccel[0],
+								MPU9150.ui16_rawAccel[1],
+								MPU9150.ui16_rawAccel[2]);
+*/
+		UARTprintf("\nRaw gyro Signed   -> X: %6d, Y: %6d, Z: %6d",
+								MPU9150.i16_rawGyro[0],
+								MPU9150.i16_rawGyro[1],
+								MPU9150.i16_rawGyro[2]);
+
+		for(i=0;i<3;i++)
+		{
+			mdegps[i]=(MPU9150.i16_rawGyro[i]*1000)/gyro_sense; //calculation of mili deg per sec
+		}
+
+		UARTprintf("\n mili Deg/s   -> X: %6d, Y: %6d, Z: %6d", mdegps[0],mdegps[1],mdegps[2]);
 
 		// set the red LED pin high, others low
 		ROM_GPIOPinWrite(GPIO_PORTF_BASE, LED_RED|LED_GREEN|LED_BLUE, LED_RED|LED_BLUE);
