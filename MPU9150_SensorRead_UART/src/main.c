@@ -57,7 +57,7 @@ int main()
 	    arraz[i] = 0;
 
 	  int8_t totax=0,totay =0,totaz=0;
-	  int8_t indax=0,inday=0,indaz=0;
+	  //int8_t indax=0,inday=0,indaz=0;
 
 	  int16_t grrax[num],grray[num],grraz[num];
 
@@ -70,7 +70,8 @@ int main()
 	  	    grraz[i] = 0;
 
 	  	  int8_t gtotax=0,gtotay =0,gtotaz=0;
-	  	  int8_t gindax=0,ginday=0,gindaz=0;
+
+	  	  int8_t index=0;//gindax=0,ginday=0,gindaz=0;
 //-----------------------------------------
 
 	for (;;) {
@@ -97,28 +98,22 @@ int main()
 //--------- smothing process -----------------------
 		int16_t accel_smooth[3];
 
-		totax-= arrax[indax];
-		  arrax[indax] = accelmg[0];
-		  totax+= arrax[indax];
-		  indax++;
-		  if(indax>=num)
-		   indax=0;
+		totax-= arrax[index];
+		  arrax[index] = accelmg[0];
+		  totax+= arrax[index];
+
 		  accel_smooth[0] = totax/num;
 
-		  totay-= array[inday];
-		    array[inday] = accelmg[1];
-		    totay+= array[inday];
-		    inday++;
-		    if(inday>=num)
-		     inday=0;
+		  totay-= array[index];
+		    array[index] = accelmg[1];
+		    totay+= array[index];
+
 		    accel_smooth[1] = totay/num;
 
-		    totaz-= arraz[indaz];
-		    arraz[indaz] = accelmg[2];
-		    totaz+= arraz[indaz];
-		    indaz++;
-		    if(indaz>=num)
-		     indaz=0;
+		    totaz-= arraz[index];
+		    arraz[index] = accelmg[2];
+		    totaz+= arraz[index];
+
 		    accel_smooth[2] = totaz/num;
 //-------------------------------------------------------
 		    UARTprintf("\nMili g   -> X: %6d, Y: %6d, Z: %6d", accel_smooth[0],accel_smooth[1],accel_smooth[2]);
@@ -141,29 +136,27 @@ int main()
 		//--------- smothing process -----------------------
 				int16_t gyro_smooth[3];
 
-				gtotax-= grrax[gindax];
-				  grrax[gindax] = mdegps[0];
-				  gtotax+= grrax[gindax];
-				  gindax++;
-				  if(gindax>=num)
-				   gindax=0;
+				gtotax-= grrax[index];
+				  grrax[index] = mdegps[0];
+				  gtotax+= grrax[index];
+
 				  gyro_smooth[0] = gtotax/num;
 
-				  gtotay-= grray[ginday];
-				    grray[ginday] = mdegps[1];
-				    gtotay+= grray[ginday];
-				    ginday++;
-				    if(ginday>=num)
-				     ginday=0;
+				  gtotay-= grray[index];
+				    grray[index] = mdegps[1];
+				    gtotay+= grray[index];
+
 				    gyro_smooth[1] = gtotay/num;
 
-				    gtotaz-= grraz[gindaz];
-				    grraz[gindaz] = mdegps[2];
-				    gtotaz+= grraz[gindaz];
-				    gindaz++;
-				    if(gindaz>=num)
-				     gindaz=0;
+				    gtotaz-= grraz[index];
+				    grraz[index] = mdegps[2];
+				    gtotaz+= grraz[index];
+
 				    gyro_smooth[2] = gtotaz/num;
+
+				    index++;
+				    if(index>num)
+				    	index=0;
 //		-------------------------------------------------------
 
 	    UARTprintf("\n mili Deg/s   -> X: %6d, Y: %6d, Z: %6d", gyro_smooth[0],gyro_smooth[1],gyro_smooth[2]);
