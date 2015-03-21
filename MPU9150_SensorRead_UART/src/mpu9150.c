@@ -39,8 +39,8 @@ _MPU9150 MPU9150 = {
 		.getRawGyroData = MPU9150GetRawGyroData
 };
 
-#define accel_sense 8192 //for 4g sensitivity=8192
-#define gyro_sense 131 //for 250dps sensitivity=131
+#define accel_sense 8192.0 //for 4g sensitivity=8192
+#define gyro_sense 131.0 //for 250dps sensitivity=131
 
 uint32_t ui32_temp;
 uint16_t ui16_temp;
@@ -488,22 +488,22 @@ uint8_t MPU9150GetRawGyroData(void)
 }
 
 
-uint8_t MPU9150GetAccelg(int16_t *accelg)
+uint8_t MPU9150GetAccelg(float *accelg)
 {
 	uint8_t i;
 	for(i=0;i<3;i++)
 	{
-		accelg[i]=(MPU9150.i16_rawAccel[i]*1000)/accel_sense; //calculation of g in mili g values
+		accelg[i]=(MPU9150.i16_rawAccel[i])/accel_sense; //calculation of g values
 	}
 	return 0;
 }
 
-uint8_t MPU9150GetDegPerSec(int16_t *degps)
+uint8_t MPU9150GetDegPerSec(float *degps)
 {
 	uint8_t i;
 	for(i=0;i<3;i++)
 	{
-		degps[i]=(MPU9150.i16_rawGyro[i]*1000)/gyro_sense; //calculation of mili deg per sec
+		degps[i]=MPU9150.i16_rawGyro[i]/gyro_sense; //calculation of deg per sec
 	}
 	return 0;
 }

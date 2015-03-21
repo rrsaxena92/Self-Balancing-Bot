@@ -43,10 +43,10 @@ int main()
 	MPU9150.init();
 	UARTprintf("\nTest read: 0x%x", MPU9150.read(0x75));
 
-	int16_t accelmg[3];
-	int16_t mdegps[3];
+	float accelg[3];
+	float degps[3];
 //----------for smoothing ----------------
-	int16_t arrax[num],array[num],arraz[num];
+	float arrax[num],array[num],arraz[num];
 
 	uint8_t i;
 	  for ( i = 0; i < num; i++)
@@ -56,10 +56,10 @@ int main()
 	  for ( i = 0; i < num; i++)
 	    arraz[i] = 0;
 
-	  int8_t totax=0,totay =0,totaz=0;
-	  //int8_t indax=0,inday=0,indaz=0;
+	  float totax=0,totay =0,totaz=0;
 
-	  int16_t grrax[num],grray[num],grraz[num];
+
+	  float grrax[num],grray[num],grraz[num];
 
 //	  	uint8_t i;
 	  	  for ( i = 0; i < num; i++)
@@ -69,9 +69,9 @@ int main()
 	  	  for ( i = 0; i < num; i++)
 	  	    grraz[i] = 0;
 
-	  	  int8_t gtotax=0,gtotay =0,gtotaz=0;
+	  	float gtotax=0,gtotay =0,gtotaz=0;
 
-	  	  int8_t index=0;//gindax=0,ginday=0,gindaz=0;
+	  	  int8_t index=0;
 //-----------------------------------------
 
 	for (;;) {
@@ -91,33 +91,40 @@ int main()
 						MPU9150.i16_rawAccel[2]);
 
 
-		MPU9150GetAccelg(accelmg);
+		MPU9150GetAccelg(accelg);
 
-//		UARTprintf("\nMili g   -> X: %6d, Y: %6d, Z: %6d", accelmg[0],accelmg[1],accelmg[2]);
+//
 
 //--------- smothing process -----------------------
-		int16_t accel_smooth[3];
+		float accel_smooth[3];
 
 		totax-= arrax[index];
-		  arrax[index] = accelmg[0];
+		  arrax[index] = accelg[0];
 		  totax+= arrax[index];
 
-		  accel_smooth[0] = totax/num;
+		  accel_smooth[0] = (totax/num);
 
 		  totay-= array[index];
-		    array[index] = accelmg[1];
+		    array[index] = accelg[1];
 		    totay+= array[index];
 
-		    accel_smooth[1] = totay/num;
+		    accel_smooth[1] = (totay/num);
 
 		    totaz-= arraz[index];
-		    arraz[index] = accelmg[2];
+		    arraz[index] = accelg[2];
 		    totaz+= arraz[index];
 
-		    accel_smooth[2] = totaz/num;
+		    accel_smooth[2] = (totaz/num);
 //-------------------------------------------------------
-		    UARTprintf("\nMili g   -> X: %6d, Y: %6d, Z: %6d", accel_smooth[0],accel_smooth[1],accel_smooth[2]);
 
+		int16_t accelmg[]={0,0,0};
+		char i;
+		for(i=0;i<3;i++)
+		{
+			accelmg[i]=(int16_t)(accel_smooth[i]*1000);
+		}
+		//UARTprintf("\nMili g   -> X: %d, Y: %6d, Z: %6d", (int16_t)(accel_smooth[0]*1000),(int16_t)(accel_smooth[1]*1000),(int16_t)(accel_smooth[2]*1000));
+		UARTprintf("\nMili g   -> X: %6d, Y: %6d, Z: %6d", accelmg[0],accelmg[1],accelmg[2]);
 		MPU9150.getRawGyroData();
 /*		UARTprintf("\nRaw gyro Unsigned -> X: %6d, Y: %6d, Z: %6d",
 								MPU9150.ui16_rawAccel[0],
@@ -129,37 +136,48 @@ int main()
 								MPU9150.i16_rawGyro[1],
 								MPU9150.i16_rawGyro[2]);
 
-		MPU9150GetDegPerSec(mdegps);
+		MPU9150GetDegPerSec(degps);
 
-//		UARTprintf("\n mili Deg/s   -> X: %6d, Y: %6d, Z: %6d", mdegps[0],mdegps[1],mdegps[2]);
 
-		//--------- smothing process -----------------------
-				int16_t gyro_smooth[3];
+//--------- smothing process -----------------------
 
-				gtotax-= grrax[index];
-				  grrax[index] = mdegps[0];
-				  gtotax+= grrax[index];
+		float gyro_smooth[3];
 
-				  gyro_smooth[0] = gtotax/num;
+		gtotax-= grrax[index];
+		grrax[index] = degps[0];
+		gtotax+= grrax[index];
 
-				  gtotay-= grray[index];
-				    grray[index] = mdegps[1];
-				    gtotay+= grray[index];
+		gyro_smooth[0] = gtotax/num;
 
-				    gyro_smooth[1] = gtotay/num;
+		gtotay-= grray[index];
+		grray[index] = degps[1];
+		gtotay+= grray[index];
 
-				    gtotaz-= grraz[index];
-				    grraz[index] = mdegps[2];
-				    gtotaz+= grraz[index];
+		gyro_smooth[1] = gtotay/num;
 
-				    gyro_smooth[2] = gtotaz/num;
+		gtotaz-= grraz[index];
+		grraz[index] = degps[2];
+		gtotaz+= grraz[index];
 
-				    index++;
-				    if(index>num)
-				    	index=0;
+		gyro_smooth[2] = gtotaz/num;
+
+		index++;
+		if(index>=num)
+		   	index=0;
 //		-------------------------------------------------------
 
-	    UARTprintf("\n mili Deg/s   -> X: %6d, Y: %6d, Z: %6d", gyro_smooth[0],gyro_smooth[1],gyro_smooth[2]);
+		int16_t mdegps[]={0,0,0};
+
+		for(i=0;i<3;i++)
+		{
+			mdegps[i]=(int16_t)(gyro_smooth[i]*1000);
+		}
+
+		UARTprintf("\n mili Deg/s   -> X: %6d, Y: %6d, Z: %6d", mdegps[0],mdegps[1],mdegps[2]);
+
+//	    UARTprintf("\n mili Deg/s   -> X: %6d, Y: %6d, Z: %6d", gyro_smooth[0],gyro_smooth[1],gyro_smooth[2]);
+
+
 		// set the red LED pin high, others low
 		ROM_GPIOPinWrite(GPIO_PORTF_BASE, LED_RED|LED_GREEN|LED_BLUE, LED_RED|LED_BLUE);
 		ROM_SysCtlDelay(5000000);
