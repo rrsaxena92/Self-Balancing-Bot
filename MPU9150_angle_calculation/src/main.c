@@ -32,13 +32,17 @@
 #define LED_BLUE 	GPIO_PIN_2
 #define LED_GREEN 	GPIO_PIN_3
 
-#define num 20
+#define num 10
 #define RAD_TO_DEG 57.295779513082320876798154814105
+
 uint8_t ConfigureUART(void);
 uint8_t ConfigureSystem(void);
 uint8_t ConfigureI2C(void);
 
-float gndlvl[] = {0.024,-0.067,-0.027};//measured on flat surface , calculated so as resultant direction will b [0 0 1]
+const float gndlvl[] = {0.024,-0.067,-0.027}; //measured on flat surface , calculated so as resultant direction will b [0 0 1]
+const float zrolvl[] = {-1.097,-0.847,-0.591};
+const float t =0.02,w1=0.5,w2=0.5;
+
 int main()
 {
 	ConfigureSystem();
@@ -52,8 +56,9 @@ int main()
 	MPU9150.init();
 	UARTprintf("\nTest read: 0x%x", MPU9150.read(0x75));
 
+	float angle4[]={90,90,0};
 	float accelg[3];
-//	float degps[3];
+	float degps[3];
 //----------for smoothing ----------------
 	float arrax[num],array[num],arraz[num];
 
@@ -74,6 +79,12 @@ int main()
 		#ifdef DEBUG_LEVEL2
 		UARTprintf("\nLED Loop");
 		#endif
+
+		float angle3[3];
+		for(i=0;i<3;i++)
+		{
+		  angle3[i]=angle4[i];
+		}
 
 		MPU9150.getRawAccelData();
 
@@ -106,10 +117,10 @@ int main()
 
 		  float axr = acos(Rdir[0]/R)*RAD_TO_DEG , ayr = acos(Rdir[1]/R)*RAD_TO_DEG , azr = acos(Rdir[2]/R)*RAD_TO_DEG;
 
-
+		  float angle1[] = {axr,ayr,azr};
 
 //--------- smothing process -----------------------
-		float angle1[3];
+/*		float angle1[3];
 
 		totax-= arrax[index];
 		  arrax[index] = axr;
@@ -133,7 +144,7 @@ int main()
     		if(index>=num)
     		   	index=0;
 
-    		UARTprintf("\nAngles   -> X: %d, Y: %6d, Z: %6d", (int16_t)(angle1[0]),(int16_t)(angle1[1]),(int16_t)(angle1[2]));
+
 //-------------------------------------------------------
 
 		/*int16_t accelmg[]={0,0,0};
@@ -144,7 +155,7 @@ int main()
 		}*/
 		//UARTprintf("\nMili g   -> X: %d, Y: %6d, Z: %6d", (int16_t)(accel_smooth[0]*1000),(int16_t)(accel_smooth[1]*1000),(int16_t)(accel_smooth[2]*1000));
 //		UARTprintf("\nMili g   -> X: %6d, Y: %6d, Z: %6d", accelmg[0],accelmg[1],accelmg[2]);
-/*		MPU9150.getRawGyroData();
+		MPU9150.getRawGyroData();
 /*		UARTprintf("\nRaw gyro Unsigned -> X: %6d, Y: %6d, Z: %6d",
 								MPU9150.ui16_rawAccel[0],
 								MPU9150.ui16_rawAccel[1],
@@ -154,15 +165,11 @@ int main()
 								MPU9150.i16_rawGyro[0],
 								MPU9150.i16_rawGyro[1],
 								MPU9150.i16_rawGyro[2]);
-
+*/
 		MPU9150GetDegPerSec(degps);
 
 
-
-
-//		-------------------------------------------------------
-
-		int16_t mdegps[]={0,0,0};
+/*		int16_t mdegps[]={0,0,0};
 
 		for(i=0;i<3;i++)
 		{
@@ -174,11 +181,27 @@ int main()
 //	    UARTprintf("\n mili Deg/s   -> X: %6d, Y: %6d, Z: %6d", gyro_smooth[0],gyro_smooth[1],gyro_smooth[2]);
 
 */
+
+
+		float angle2[3];
+
+		for(i=0;i<3;i++)
+		{
+		   angle2[i]= angle3[i] + ((degps[i]/16.4)-zrolvl[i])*t;
+		}
+
+		for(i =0;i<3;i++)
+		{
+		    angle4[i] = (w1*angle1[i] + w2*angle2[i])/(w1 + w2);
+		}
+
+		UARTprintf("\nAngles   -> X: %d, Y: %6d, Z: %6d", (int16_t)(angle4[0]),(int16_t)(angle4[1]),(int16_t)(angle4[2]));
+
 		// set the red LED pin high, others low
 		ROM_GPIOPinWrite(GPIO_PORTF_BASE, LED_RED|LED_GREEN|LED_BLUE, LED_RED|LED_BLUE);
-		ROM_SysCtlDelay(5000000);
+		ROM_SysCtlDelay(500000);
 		ROM_GPIOPinWrite(GPIO_PORTF_BASE, LED_RED|LED_GREEN|LED_BLUE, 0);
-		ROM_SysCtlDelay(5000000);
+		ROM_SysCtlDelay(500000);
 	}
 
 }
