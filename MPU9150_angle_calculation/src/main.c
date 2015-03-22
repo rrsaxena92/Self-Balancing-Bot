@@ -40,8 +40,8 @@ uint8_t ConfigureSystem(void);
 uint8_t ConfigureI2C(void);
 
 const float gndlvl[] = {0.024,-0.067,-0.027}; //measured on flat surface , calculated so as resultant direction will b [0 0 1]
-const float zrolvl[] = {-1.097,-0.847,-0.591};
-const float t =0.02,w1=0.5,w2=0.5;
+const float zrolvl[] = {-1.097,-0.847,-0.591}; //offset of gyro initially
+const float t =0.02,w1=0.5,w2=0.5;// t is time delay of gyro,w1 & w2 are weights to accel & gyro respectively
 
 int main()
 {
@@ -56,7 +56,7 @@ int main()
 	MPU9150.init();
 	UARTprintf("\nTest read: 0x%x", MPU9150.read(0x75));
 
-	float angle4[]={90,90,0};
+	float angle5[]={90,90,0};
 	float accelg[3];
 	float degps[3];
 //----------for smoothing ----------------
@@ -83,7 +83,7 @@ int main()
 		float angle3[3];
 		for(i=0;i<3;i++)
 		{
-		  angle3[i]=angle4[i];
+		  angle3[i]=angle5[i];
 		}
 
 		MPU9150.getRawAccelData();
@@ -96,12 +96,13 @@ int main()
 						MPU9150.ui16_rawAccel[0],
 						MPU9150.ui16_rawAccel[1],
 						MPU9150.ui16_rawAccel[2]);
-*/
+
 		UARTprintf("\nRaw accel Signed   -> X: %6d, Y: %6d, Z: %6d",
 						MPU9150.i16_rawAccel[0],
 						MPU9150.i16_rawAccel[1],
 						MPU9150.i16_rawAccel[2]);
 
+*/
 
 		MPU9150GetAccelg(accelg);
 
@@ -119,33 +120,7 @@ int main()
 
 		  float angle1[] = {axr,ayr,azr};
 
-//--------- smothing process -----------------------
-/*		float angle1[3];
 
-		totax-= arrax[index];
-		  arrax[index] = axr;
-		  totax+= arrax[index];
-
-		  angle1[0] = (totax/num);
-
-		  totay-= array[index];
-		    array[index] = ayr;
-		    totay+= array[index];
-
-		    angle1[1] = (totay/num);
-
-		    totaz-= arraz[index];
-		    arraz[index] = azr;
-		    totaz+= arraz[index];
-
-		    angle1[2] = (totaz/num);
-
-		    index++;
-    		if(index>=num)
-    		   	index=0;
-
-
-//-------------------------------------------------------
 
 		/*int16_t accelmg[]={0,0,0};
 		char i;
@@ -155,6 +130,9 @@ int main()
 		}*/
 		//UARTprintf("\nMili g   -> X: %d, Y: %6d, Z: %6d", (int16_t)(accel_smooth[0]*1000),(int16_t)(accel_smooth[1]*1000),(int16_t)(accel_smooth[2]*1000));
 //		UARTprintf("\nMili g   -> X: %6d, Y: %6d, Z: %6d", accelmg[0],accelmg[1],accelmg[2]);
+
+
+
 		MPU9150.getRawGyroData();
 /*		UARTprintf("\nRaw gyro Unsigned -> X: %6d, Y: %6d, Z: %6d",
 								MPU9150.ui16_rawAccel[0],
@@ -190,12 +168,43 @@ int main()
 		   angle2[i]= angle3[i] + ((degps[i]/16.4)-zrolvl[i])*t;
 		}
 
+
+		float angle4[3];
 		for(i =0;i<3;i++)
 		{
 		    angle4[i] = (w1*angle1[i] + w2*angle2[i])/(w1 + w2);
 		}
 
-		UARTprintf("\nAngles   -> X: %d, Y: %6d, Z: %6d", (int16_t)(angle4[0]),(int16_t)(angle4[1]),(int16_t)(angle4[2]));
+
+		//--------- smothing process -----------------------
+		float angle5[]={0,0,0};
+
+		totax-= arrax[index];
+		arrax[index] = angle4[0];
+		totax+= arrax[index];
+
+		angle5[0] = (totax/num);
+
+		totay-= array[index];
+		array[index] = angle4[1];
+		totay+= array[index];
+
+		angle5[1] = (totay/num);
+
+		totaz-= arraz[index];
+		arraz[index] = angle4[2];
+		totaz+= arraz[index];
+
+		angle5[2] = (totaz/num);
+
+		index++;
+		if(index>=num)
+			index=0;
+
+
+		//-------------------------------------------------------
+
+		UARTprintf("\nAngles   -> X: %d, Y: %6d, Z: %6d", (int16_t)(angle5[0]),(int16_t)(angle5[1]),(int16_t)(angle5[2]));
 
 		// set the red LED pin high, others low
 		ROM_GPIOPinWrite(GPIO_PORTF_BASE, LED_RED|LED_GREEN|LED_BLUE, LED_RED|LED_BLUE);
